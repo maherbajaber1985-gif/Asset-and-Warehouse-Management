@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>صيانة المقار والمباني — وطن الأول</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#124559; --primary-2:#598392; --bg:#F4F6F7; --surface:#FFFFFF;
+    --ink:#17262E; --muted:#6B7A82; --line:#E1E7EA;
+    --open:#C1443C; --progress:#E0922F; --waiting:#6B7A82; --closed:#2E7D5B;
+    --radius:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"IBM Plex Sans Arabic",sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.6}
+  .app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+  /* Sidebar */
+  aside{background:var(--primary);color:#fff;padding:24px 16px;display:flex;flex-direction:column;gap:6px}
+  .brand{display:flex;flex-direction:column;gap:2px;margin-bottom:24px;padding:0 8px}
+  .brand b{font-size:16px;font-weight:700}
+  .brand span{font-size:12px;color:#B9CDD4}
+  .nav{background:none;border:none;color:#D6E2E6;font-family:inherit;font-size:15px;text-align:right;padding:11px 14px;border-radius:10px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:10px}
+  .nav:hover{background:rgba(255,255,255,.08);color:#fff}
+  .nav.active{background:#fff;color:var(--primary);font-weight:600}
+  .nav .ic{font-size:17px}
+  /* Main */
+  main{padding:28px 32px;overflow:auto}
+  .head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px;flex-wrap:wrap;gap:12px}
+  .head h1{font-size:22px;font-weight:700}
+  .head p{color:var(--muted);font-size:13px;margin-top:2px}
+  .btn{background:var(--primary);color:#fff;border:none;font-family:inherit;font-size:14px;font-weight:600;padding:10px 18px;border-radius:10px;cursor:pointer;transition:.15s}
+  .btn:hover{background:#0d3644}
+  .btn.ghost{background:#fff;color:var(--primary);border:1px solid var(--line)}
+  .btn.ghost:hover{background:#f0f4f5}
+  .btn.sm{padding:6px 12px;font-size:12.5px;font-weight:500}
+  /* KPI */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;border-inline-start:4px solid var(--primary-2)}
+  .kpi .n{font-size:28px;font-weight:700;line-height:1}
+  .kpi .l{color:var(--muted);font-size:13px;margin-top:6px}
+  .kpi.red{border-inline-start-color:var(--open)} .kpi.red .n{color:var(--open)}
+  .kpi.amber{border-inline-start-color:var(--progress)} .kpi.amber .n{color:var(--progress)}
+  .kpi.green{border-inline-start-color:var(--closed)} .kpi.green .n{color:var(--closed)}
+  /* Cards / tables */
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:20px}
+  .card h2{font-size:16px;font-weight:700;margin-bottom:16px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:right;color:var(--muted);font-weight:600;font-size:12.5px;padding:10px 12px;border-bottom:2px solid var(--line);white-space:nowrap}
+  td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  .row-open{border-inline-start:3px solid var(--open)}
+  .row-progress{border-inline-start:3px solid var(--progress)}
+  .row-waiting{border-inline-start:3px solid var(--waiting)}
+  .row-closed{border-inline-start:3px solid var(--closed)}
+  /* pills */
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap}
+  .pill .dot{width:7px;height:7px;border-radius:50%}
+  .p-open{background:#FBEAE8;color:var(--open)} .p-open .dot{background:var(--open)}
+  .p-progress{background:#FCF0DF;color:#B5721F} .p-progress .dot{background:var(--progress)}
+  .p-waiting{background:#EDF0F1;color:var(--waiting)} .p-waiting .dot{background:var(--waiting)}
+  .p-closed{background:#E4F1EA;color:var(--closed)} .p-closed .dot{background:var(--closed)}
+  .prio{font-weight:600;font-size:12.5px}
+  .prio-عاجل{color:var(--open)} .prio-عالي{color:var(--progress)} .prio-متوسط{color:var(--primary-2)} .prio-منخفض{color:var(--muted)}
+  /* filters */
+  .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  select,input,textarea{font-family:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink)}
+  select:focus,input:focus,textarea:focus{outline:none;border-color:var(--primary-2)}
+  .filters select,.filters input{padding:8px 12px;font-size:13px}
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(23,38,46,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+  .overlay.on{display:flex}
+  .modal{background:#fff;border-radius:16px;padding:26px;width:100%;max-width:520px;max-height:90vh;overflow:auto}
+  .modal h3{font-size:18px;font-weight:700;margin-bottom:18px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:500}
+  .field input,.field select,.field textarea{width:100%}
+  .field textarea{resize:vertical;min-height:70px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-start;margin-top:8px}
+  .link{background:none;border:none;color:var(--muted);cursor:pointer;font-family:inherit;font-size:12.5px;padding:4px 6px}
+  .link:hover{color:var(--open)}
+  .empty{text-align:center;color:var(--muted);padding:40px;font-size:14px}
+  .view{display:none} .view.on{display:block}
+  .site-tag{font-size:11px;color:var(--muted)}
+  @media(max-width:760px){
+    .app{grid-template-columns:1fr}
+    aside{flex-direction:row;overflow:auto;padding:12px}
+    .brand{display:none}
+    main{padding:18px}
+    .grid2{grid-template-columns:1fr}
+    .tbl-wrap{overflow-x:auto}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand"><b>وطن الأول</b><span>صيانة المقار والمباني</span></div>
+    <button class="nav active" data-view="dash"><span class="ic">▣</span> لوحة المعلومات</button>
+    <button class="nav" data-view="req"><span class="ic">✚</span> بلاغات الصيانة</button>
+    <button class="nav" data-view="sites"><span class="ic">▤</span> المواقع والمباني</button>
+    <button class="nav" data-view="prev"><span class="ic">⟳</span> الصيانة الوقائية</button>
+  </aside>
+
+  <main>
+    <!-- Dashboard -->
+    <section class="view on" id="dash">
+      <div class="head"><div><h1>لوحة المعلومات</h1><p>نظرة عامة على حالة الصيانة عبر جميع المواقع</p></div></div>
+      <div class="kpis" id="kpis"></div>
+      <div class="card">
+        <h2>البلاغات العاجلة والمفتوحة</h2>
+        <div class="tbl-wrap"><table id="urgentTable"></table></div>
+      </div>
+      <div class="card">
+        <h2>البلاغات حسب الموقع</h2>
+        <div class="tbl-wrap"><table id="bySiteTable"></table></div>
+      </div>
+    </section>
+
+    <!-- Requests -->
+    <section class="view" id="req">
+      <div class="head">
+        <div><h1>بلاغات الصيانة</h1><p>تسجيل ومتابعة أوامر العمل حتى الإغلاق</p></div>
+        <button class="btn" onclick="openReqModal()">＋ بلاغ جديد</button>
+      </div>
+      <div class="filters">
+        <input id="fSearch" placeholder="🔍 بحث..." oninput="renderReq()">
+        <select id="fStatus" onchange="renderReq()"><option value="">كل الحالات</option><option>مفتوح</option><option>قيد التنفيذ</option><option>بانتظار مورد/قطع</option><option>مغلق</option><option>ملغي</option></select>
+        <select id="fSite" onchange="renderReq()"></select>
+        <select id="fPrio" onchange="renderReq()"><option value="">كل الأولويات</option><option>عاجل</option><option>عالي</option><option>متوسط</option><option>منخفض</option></select>
+      </div>
+      <div class="card"><div class="tbl-wrap"><table id="reqTable"></table></div></div>
+    </section>
+
+    <!-- Sites -->
+    <section class="view" id="sites">
+      <div class="head">
+        <div><h1>المواقع والمباني</h1><p>السكنات والفروع ومراكز التوزيع والمكاتب</p></div>
+        <button class="btn" onclick="openSiteModal()">＋ موقع جديد</button>
+      </div>
+      <div class="card"><div class="tbl-wrap"><table id="siteTable"></table></div></div>
+    </section>
+
+    <!-- Preventive -->
+    <section class="view" id="prev">
+      <div class="head">
+        <div><h1>الصيانة الوقائية</h1><p>المهام الدورية المجدولة لكل موقع</p></div>
+        <button class="btn" onclick="openPrevModal()">＋ مهمة وقائية</button>
+      </div>
+      <div class="card"><div class="tbl-wrap"><table id="prevTable"></table></div></div>
+    </section>
+  </main>
+</div>
+
+<!-- Request Modal -->
+<div class="overlay" id="reqOverlay">
+  <div class="modal">
+    <h3>بلاغ صيانة جديد</h3>
+    <div class="grid2">
+      <div class="field"><label>الموقع *</label><select id="rSite"></select></div>
+      <div class="field"><label>التصنيف *</label><select id="rCat"><option>تكييف</option><option>كهرباء</option><option>سباكة</option><option>أثاث ومعدات</option><option>إنشائي/دهان</option><option>أمن وسلامة</option><option>نظافة عامة</option><option>أخرى</option></select></div>
+    </div>
+    <div class="field"><label>وصف مختصر للعطل *</label><input id="rTitle" placeholder="مثال: تسريب في دورة مياه الطابق الأول"></div>
+    <div class="field"><label>التفاصيل</label><textarea id="rDesc" placeholder="أي تفاصيل إضافية..."></textarea></div>
+    <div class="grid2">
+      <div class="field"><label>الأولوية *</label><select id="rPrio"><option>عاجل</option><option>عالي</option><option selected>متوسط</option><option>منخفض</option></select></div>
+      <div class="field"><label>مقدّم البلاغ</label><input id="rReporter" placeholder="اسم المشرف"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="saveReq()">حفظ البلاغ</button>
+      <button class="btn ghost" onclick="closeModal('reqOverlay')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Site Modal -->
+<div class="overlay" id="siteOverlay">
+  <div class="modal">
+    <h3>موقع جديد</h3>
+    <div class="field"><label>اسم الموقع *</label><input id="sName" placeholder="مثال: سكن العزيزية"></div>
+    <div class="grid2">
+      <div class="field"><label>المدينة *</label><select id="sCity"><option>الرياض</option><option>جدة</option><option>الدمام</option><option>أبها</option><option>أخرى</option></select></div>
+      <div class="field"><label>النوع *</label><select id="sType"><option>سكن</option><option>فرع</option><option>مركز توزيع</option><option>مكتب</option></select></div>
+    </div>
+    <div class="field"><label>العنوان</label><input id="sAddr" placeholder="الحي / الشارع"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="saveSite()">حفظ الموقع</button>
+      <button class="btn ghost" onclick="closeModal('siteOverlay')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Preventive Modal -->
+<div class="overlay" id="prevOverlay">
+  <div class="modal">
+    <h3>مهمة صيانة وقائية</h3>
+    <div class="field"><label>الموقع *</label><select id="pSite"></select></div>
+    <div class="field"><label>المهمة *</label><input id="pTask" placeholder="مثال: تنظيف فلاتر التكييف"></div>
+    <div class="grid2">
+      <div class="field"><label>التكرار *</label><select id="pFreq"><option>شهري</option><option>ربع سنوي</option><option>نصف سنوي</option><option>سنوي</option></select></div>
+      <div class="field"><label>الاستحقاق القادم *</label><input id="pNext" type="date"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="savePrev()">حفظ المهمة</button>
+      <button class="btn ghost" onclick="closeModal('prevOverlay')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------- Storage ----------
+const DB = {
+  get(k,def){ try{return JSON.parse(localStorage.getItem(k))??def}catch(e){return def} },
+  set(k,v){ localStorage.setItem(k,JSON.stringify(v)) }
+};
+let sites = DB.get('wf_sites', null);
+let reqs  = DB.get('wf_reqs', null);
+let prevs = DB.get('wf_prevs', null);
+
+// ---------- Seed (first run) ----------
+if(sites===null){
+  sites = [
+    {id:1,name:'سكن العزيزية',city:'الرياض',type:'سكن',addr:'حي العزيزية'},
+    {id:2,name:'فرع الرياض الرئيسي',city:'الرياض',type:'فرع',addr:'العليا'},
+    {id:3,name:'سكن الصفا',city:'جدة',type:'سكن',addr:'حي الصفا'},
+    {id:4,name:'مركز توزيع الدمام',city:'الدمام',type:'مركز توزيع',addr:'المنطقة الصناعية'},
+    {id:5,name:'مكتب أبها',city:'أبها',type:'مكتب',addr:'وسط المدينة'}
+  ];
+  reqs = [
+    {id:1,site:1,cat:'تكييف',title:'مكيف الصالة لا يبرّد',desc:'',prio:'عالي',status:'مفتوح',reporter:'أحمد',cost:0,created:Date.now()-86400000*2,closed:null},
+    {id:2,site:4,cat:'كهرباء',title:'انقطاع كهرباء في المستودع',desc:'قاطع رئيسي',prio:'عاجل',status:'قيد التنفيذ',reporter:'خالد',cost:0,created:Date.now()-86400000,closed:null},
+    {id:3,site:3,cat:'سباكة',title:'تسريب حنفية المطبخ',desc:'',prio:'متوسط',status:'مغلق',reporter:'سعيد',cost:120,created:Date.now()-86400000*6,closed:Date.now()-86400000*4}
+  ];
+  prevs = [
+    {id:1,site:1,task:'تنظيف فلاتر التكييف',freq:'شهري',next:isoIn(10)},
+    {id:2,site:4,task:'فحص طفايات الحريق',freq:'ربع سنوي',next:isoIn(25)}
+  ];
+  saveAll();
+}
+function isoIn(days){const d=new Date();d.setDate(d.getDate()+days);return d.toISOString().slice(0,10)}
+function saveAll(){DB.set('wf_sites',sites);DB.set('wf_reqs',reqs);DB.set('wf_prevs',prevs)}
+const nextId = a => a.length? Math.max(...a.map(x=>x.id))+1 : 1;
+const siteName = id => (sites.find(s=>s.id===id)||{}).name || '—';
+
+// ---------- Status helpers ----------
+const statusClass = {'مفتوح':'open','قيد التنفيذ':'progress','بانتظار مورد/قطع':'waiting','مغلق':'closed','ملغي':'waiting'};
+function statusPill(s){const c=statusClass[s]||'waiting';return `<span class="pill p-${c}"><span class="dot"></span>${s}</span>`}
+
+// ---------- Navigation ----------
+document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.nav').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  b.classList.add('active');
+  document.getElementById(b.dataset.view).classList.add('on');
+  renderAll();
+});
+
+// ---------- Render: Dashboard ----------
+function renderDash(){
+  const open = reqs.filter(r=>r.status==='مفتوح').length;
+  const prog = reqs.filter(r=>r.status==='قيد التنفيذ').length;
+  const urgentOpen = reqs.filter(r=>r.prio==='عاجل' && r.status!=='مغلق' && r.status!=='ملغي').length;
+  const now=new Date(); const closedMonth = reqs.filter(r=>r.status==='مغلق'&&r.closed&&new Date(r.closed).getMonth()===now.getMonth()).length;
+  document.getElementById('kpis').innerHTML = `
+    <div class="kpi"><div class="n">${reqs.length}</div><div class="l">إجمالي البلاغات</div></div>
+    <div class="kpi red"><div class="n">${open}</div><div class="l">مفتوح</div></div>
+    <div class="kpi amber"><div class="n">${prog}</div><div class="l">قيد التنفيذ</div></div>
+    <div class="kpi red"><div class="n">${urgentOpen}</div><div class="l">عاجل غير مغلق</div></div>
+    <div class="kpi green"><div class="n">${closedMonth}</div><div class="l">مغلق هذا الشهر</div></div>`;
+
+  const urgent = reqs.filter(r=>r.status!=='مغلق'&&r.status!=='ملغي')
+    .sort((a,b)=>({'عاجل':0,'عالي':1,'متوسط':2,'منخفض':3}[a.prio]-{'عاجل':0,'عالي':1,'متوسط':2,'منخفض':3}[b.prio]));
+  const ut=document.getElementById('urgentTable');
+  if(!urgent.length){ut.innerHTML=`<tr><td class="empty">لا توجد بلاغات مفتوحة 🎉</td></tr>`}
+  else ut.innerHTML=`<thead><tr><th>البلاغ</th><th>الموقع</th><th>الأولوية</th><th>الحالة</th></tr></thead><tbody>`+
+    urgent.map(r=>`<tr class="row-${statusClass[r.status]}"><td>${r.title}</td><td class="site-tag">${siteName(r.site)}</td><td class="prio prio-${r.prio}">${r.prio}</td><td>${statusPill(r.status)}</td></tr>`).join('')+`</tbody>`;
+
+  const bs=document.getElementById('bySiteTable');
+  bs.innerHTML=`<thead><tr><th>الموقع</th><th>المدينة</th><th>مفتوح</th><th>قيد التنفيذ</th><th>مغلق</th></tr></thead><tbody>`+
+    sites.map(s=>{const rs=reqs.filter(r=>r.site===s.id);return `<tr><td>${s.name}</td><td class="site-tag">${s.city}</td><td>${rs.filter(r=>r.status==='مفتوح').length}</td><td>${rs.filter(r=>r.status==='قيد التنفيذ').length}</td><td>${rs.filter(r=>r.status==='مغلق').length}</td></tr>`}).join('')+`</tbody>`;
+}
+
+// ---------- Render: Requests ----------
+function renderReq(){
+  const q=(document.getElementById('fSearch').value||'').trim();
+  const fs=document.getElementById('fStatus').value, fsite=document.getElementById('fSite').value, fp=document.getElementById('fPrio').value;
+  let list=[...reqs].sort((a,b)=>b.created-a.created);
+  if(q) list=list.filter(r=>(r.title+r.desc+r.reporter).includes(q));
+  if(fs) list=list.filter(r=>r.status===fs);
+  if(fsite) list=list.filter(r=>r.site==fsite);
+  if(fp) list=list.filter(r=>r.prio===fp);
+  const t=document.getElementById('reqTable');
+  if(!list.length){t.innerHTML=`<tr><td class="empty">لا توجد بلاغات مطابقة</td></tr>`;return}
+  t.innerHTML=`<thead><tr><th>#</th><th>البلاغ</th><th>الموقع</th><th>التصنيف</th><th>الأولوية</th><th>الحالة</th><th>التكلفة</th><th>إجراء</th></tr></thead><tbody>`+
+    list.map(r=>`<tr class="row-${statusClass[r.status]}">
+      <td>${r.id}</td>
+      <td><b>${r.title}</b>${r.desc?`<br><span class="site-tag">${r.desc}</span>`:''}${r.reporter?`<br><span class="site-tag">بلّغ: ${r.reporter}</span>`:''}</td>
+      <td class="site-tag">${siteName(r.site)}</td>
+      <td>${r.cat}</td>
+      <td class="prio prio-${r.prio}">${r.prio}</td>
+      <td>${statusPill(r.status)}</td>
+      <td>${r.cost?r.cost+' ﷼':'—'}</td>
+      <td>${nextStatusBtn(r)} <button class="link" onclick="delReq(${r.id})">حذف</button></td>
+    </tr>`).join('')+`</tbody>`;
+}
+function nextStatusBtn(r){
+  const flow={'مفتوح':'قيد التنفيذ','قيد التنفيذ':'مغلق','بانتظار مورد/قطع':'مغلق'};
+  const nx=flow[r.status];
+  if(!nx) return '';
+  return `<button class="btn sm" onclick="advance(${r.id},'${nx}')">${nx==='مغلق'?'إغلاق':'بدء التنفيذ'}</button>`;
+}
+function advance(id,to){const r=reqs.find(x=>x.id===id);r.status=to;if(to==='مغلق'){r.closed=Date.now();const c=prompt('تكلفة الإصلاح بالريال (اختياري):','0');r.cost=Number(c)||0}saveAll();renderAll()}
+function delReq(id){if(confirm('حذف هذا البلاغ؟')){reqs=reqs.filter(r=>r.id!==id);saveAll();renderAll()}}
+
+// ---------- Render: Sites ----------
+function renderSites(){
+  const t=document.getElementById('siteTable');
+  if(!sites.length){t.innerHTML=`<tr><td class="empty">لا توجد مواقع بعد — أضف موقعاً</td></tr>`;return}
+  t.innerHTML=`<thead><tr><th>الموقع</th><th>المدينة</th><th>النوع</th><th>العنوان</th><th>بلاغات مفتوحة</th><th></th></tr></thead><tbody>`+
+    sites.map(s=>{const op=reqs.filter(r=>r.site===s.id&&r.status!=='مغلق'&&r.status!=='ملغي').length;
+    return `<tr><td><b>${s.name}</b></td><td class="site-tag">${s.city}</td><td>${s.type}</td><td class="site-tag">${s.addr||'—'}</td><td>${op}</td><td><button class="link" onclick="delSite(${s.id})">حذف</button></td></tr>`}).join('')+`</tbody>`;
+}
+function delSite(id){if(reqs.some(r=>r.site===id)){alert('لا يمكن حذف موقع مرتبط ببلاغات.');return}if(confirm('حذف الموقع؟')){sites=sites.filter(s=>s.id!==id);saveAll();renderAll()}}
+
+// ---------- Render: Preventive ----------
+function renderPrev(){
+  const t=document.getElementById('prevTable');
+  if(!prevs.length){t.innerHTML=`<tr><td class="empty">لا توجد مهام وقائية بعد</td></tr>`;return}
+  const today=new Date().toISOString().slice(0,10);
+  t.innerHTML=`<thead><tr><th>المهمة</th><th>الموقع</th><th>التكرار</th><th>الاستحقاق القادم</th><th>إجراء</th></tr></thead><tbody>`+
+    [...prevs].sort((a,b)=>a.next.localeCompare(b.next)).map(p=>{const due=p.next<=today;
+    return `<tr><td><b>${p.task}</b></td><td class="site-tag">${siteName(p.site)}</td><td>${p.freq}</td><td style="${due?'color:var(--open);font-weight:600':''}">${p.next}${due?' ⚠':''}</td><td><button class="btn sm" onclick="doneTask(${p.id})">تم التنفيذ</button> <button class="link" onclick="delPrev(${p.id})">حذف</button></td></tr>`}).join('')+`</tbody>`;
+}
+function doneTask(id){const p=prevs.find(x=>x.id===id);const add={'شهري':30,'ربع سنوي':90,'نصف سنوي':182,'سنوي':365}[p.freq]||30;p.next=isoIn(add);saveAll();renderAll()}
+function delPrev(id){if(confirm('حذف المهمة؟')){prevs=prevs.filter(p=>p.id!==id);saveAll();renderAll()}}
+
+// ---------- Modals ----------
+function fillSiteSelects(){
+  const opts=sites.map(s=>`<option value="${s.id}">${s.name} — ${s.city}</option>`).join('');
+  document.getElementById('rSite').innerHTML=opts;
+  document.getElementById('pSite').innerHTML=opts;
+  document.getElementById('fSite').innerHTML=`<option value="">كل المواقع</option>`+opts;
+}
+function openReqModal(){if(!sites.length){alert('أضف موقعاً أولاً.');return}fillSiteSelects();document.getElementById('reqOverlay').classList.add('on')}
+function openSiteModal(){document.getElementById('siteOverlay').classList.add('on')}
+function openPrevModal(){if(!sites.length){alert('أضف موقعاً أولاً.');return}fillSiteSelects();document.getElementById('pNext').value=isoIn(30);document.getElementById('prevOverlay').classList.add('on')}
+function closeModal(id){document.getElementById(id).classList.remove('on')}
+
+function saveReq(){
+  const title=document.getElementById('rTitle').value.trim();
+  if(!title){alert('اكتب وصفاً مختصراً للعطل.');return}
+  reqs.push({id:nextId(reqs),site:Number(document.getElementById('rSite').value),cat:document.getElementById('rCat').value,title,desc:document.getElementById('rDesc').value.trim(),prio:document.getElementById('rPrio').value,status:'مفتوح',reporter:document.getElementById('rReporter').value.trim(),cost:0,created:Date.now(),closed:null});
+  saveAll();document.getElementById('rTitle').value='';document.getElementById('rDesc').value='';document.getElementById('rReporter').value='';
+  closeModal('reqOverlay');renderAll();
+}
+function saveSite(){
+  const name=document.getElementById('sName').value.trim();
+  if(!name){alert('اكتب اسم الموقع.');return}
+  sites.push({id:nextId(sites),name,city:document.getElementById('sCity').value,type:document.getElementById('sType').value,addr:document.getElementById('sAddr').value.trim()});
+  saveAll();document.getElementById('sName').value='';document.getElementById('sAddr').value='';
+  closeModal('siteOverlay');renderAll();
+}
+function savePrev(){
+  const task=document.getElementById('pTask').value.trim();
+  if(!task){alert('اكتب اسم المهمة.');return}
+  prevs.push({id:nextId(prevs),site:Number(document.getElementById('pSite').value),task,freq:document.getElementById('pFreq').value,next:document.getElementById('pNext').value||isoIn(30)});
+  saveAll();document.getElementById('pTask').value='';
+  closeModal('prevOverlay');renderAll();
+}
+
+// ---------- Render all ----------
+function renderAll(){fillSiteSelects();renderDash();renderReq();renderSites();renderPrev()}
+document.querySelectorAll('.overlay').forEach(o=>o.onclick=e=>{if(e.target===o)o.classList.remove('on')});
+renderAll();
+</script>
+</body>
+</html>
