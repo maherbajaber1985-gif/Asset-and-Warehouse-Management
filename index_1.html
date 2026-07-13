@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>منصة طلبات الصيانة — وطن الأول</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#17563F; --brand-2:#1E6B4F; --brand-soft:#E7F0EB;
+  --bg:#F4F7F5; --surface:#FFFFFF; --ink:#16231D; --muted:#68766F; --line:#E2E8E5;
+  --new:#2F6DB5; --prog:#E0922F; --wait:#6B7A82; --done:#2E7D5B; --rej:#C1443C;
+  --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.6}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand-2)}
+textarea{resize:vertical;min-height:70px}
+.btn{background:var(--brand);color:#fff;border:none;font-weight:700;font-size:14px;padding:10px 18px;border-radius:9px;transition:.15s}
+.btn:hover{background:#0f3d2c}
+.btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--line);font-weight:500}
+.btn.ghost:hover{background:var(--brand-soft)}
+.btn.sm{padding:6px 12px;font-size:12.5px}
+.btn.rej{background:var(--rej)} .btn.rej:hover{background:#a3372f}
+
+/* ---------- Login ---------- */
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(160deg,#1b4d3a,#0f3d2c)}
+.login-card{width:100%;max-width:430px;background:#fff;border-radius:18px;padding:36px 32px;box-shadow:0 20px 50px -20px rgba(0,0,0,.4)}
+.login-card .logo{text-align:center;margin-bottom:26px}
+.login-card .logo b{display:block;font-size:13px;color:var(--brand);font-weight:700;letter-spacing:.5px}
+.login-card .logo .t{font-size:22px;font-weight:800;margin-top:6px}
+.login-card .logo .s{font-size:13px;color:var(--muted)}
+.roletabs{display:flex;gap:6px;background:var(--bg);padding:5px;border-radius:11px;margin-bottom:22px}
+.roletabs button{flex:1;padding:10px;border:none;border-radius:8px;font-weight:700;font-size:13px;background:transparent;color:var(--muted)}
+.roletabs button.on{background:var(--brand);color:#fff}
+.lfield{margin-bottom:15px}
+.lfield label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px}
+.hidden{display:none!important}
+
+/* ---------- App shell ---------- */
+.app{display:grid;grid-template-columns:238px 1fr;min-height:100vh}
+aside{background:var(--brand);color:#fff;padding:22px 14px;display:flex;flex-direction:column;gap:4px}
+.brand{padding:0 8px 20px;border-bottom:1px solid rgba(255,255,255,.12);margin-bottom:14px}
+.brand b{font-size:15px;font-weight:800}
+.brand span{display:block;font-size:11.5px;color:#B7CDC2;margin-top:2px}
+.nav{background:none;border:none;color:#D6E5DD;font-size:14.5px;text-align:right;padding:11px 13px;border-radius:9px;display:flex;align-items:center;gap:10px;transition:.15s}
+.nav:hover{background:rgba(255,255,255,.09);color:#fff}
+.nav.active{background:#fff;color:var(--brand);font-weight:700}
+.nav .ic{width:18px;text-align:center;font-size:15px}
+.nav .badge{margin-inline-start:auto;background:var(--rej);color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:20px}
+.logout{margin-top:auto;color:#B7CDC2;font-size:13px;background:none;border:none;text-align:right;padding:10px 13px}
+.logout:hover{color:#fff}
+
+main{padding:24px 30px;overflow:auto}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.topbar h1{font-size:21px;font-weight:800}
+.topbar .who{font-size:12.5px;color:var(--muted)}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:13px;margin-bottom:22px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:15px 17px;border-inline-start:4px solid var(--brand-2)}
+.kpi .n{font-size:26px;font-weight:800;line-height:1}
+.kpi .l{color:var(--muted);font-size:12.5px;margin-top:6px}
+.kpi.blue{border-inline-start-color:var(--new)} .kpi.blue .n{color:var(--new)}
+.kpi.amber{border-inline-start-color:var(--prog)} .kpi.amber .n{color:var(--prog)}
+.kpi.red{border-inline-start-color:var(--rej)} .kpi.red .n{color:var(--rej)}
+.kpi.green{border-inline-start-color:var(--done)} .kpi.green .n{color:var(--done)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:18px}
+.card h2{font-size:16px;font-weight:800;margin-bottom:15px}
+.card h2 .sub{font-size:12px;font-weight:500;color:var(--muted);margin-inline-start:8px}
+
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:right;color:var(--muted);font-weight:700;font-size:12px;padding:10px 12px;border-bottom:2px solid var(--line);white-space:nowrap}
+td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.pill .dot{width:7px;height:7px;border-radius:50%}
+.st-جديد{background:#E6EFF9;color:var(--new)} .st-جديد .dot{background:var(--new)}
+.st-قيد.st-التنفيذ{background:#FCF0DF;color:#B5721F}
+.pill.prog{background:#FCF0DF;color:#B5721F} .pill.prog .dot{background:var(--prog)}
+.pill.wait{background:#EDF0F1;color:var(--wait)} .pill.wait .dot{background:var(--wait)}
+.pill.done{background:#E4F1EA;color:var(--done)} .pill.done .dot{background:var(--done)}
+.pill.rej{background:#FBEAE8;color:var(--rej)} .pill.rej .dot{background:var(--rej)}
+.pill.new{background:#E6EFF9;color:var(--new)} .pill.new .dot{background:var(--new)}
+.prio{font-weight:700;font-size:12.5px}
+.prio-عاجل{color:var(--rej)} .prio-عالي{color:var(--prog)} .prio-متوسط{color:var(--brand-2)} .prio-منخفض{color:var(--muted)}
+
+.filters{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:15px}
+.filters input,.filters select{width:auto;min-width:130px;padding:8px 11px;font-size:13px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12.5px;color:var(--muted);font-weight:700;margin-bottom:6px}
+.muted{color:var(--muted);font-size:12px}
+.empty{text-align:center;color:var(--muted);padding:36px;font-size:14px}
+.view{display:none} .view.on{display:block}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.link{background:none;border:none;color:var(--muted);font-size:12.5px;padding:4px 6px}
+.link:hover{color:var(--rej)}
+
+.overlay{position:fixed;inset:0;background:rgba(20,35,29,.5);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+.overlay.on{display:flex}
+.modal{background:#fff;border-radius:16px;padding:24px;width:100%;max-width:480px;max-height:90vh;overflow:auto}
+.modal h3{font-size:17px;font-weight:800;margin-bottom:16px}
+.modal-actions{display:flex;gap:9px;margin-top:6px}
+.banner{background:#FBEAE8;color:#a3372f;border:1px solid #f2c9c4;padding:12px 15px;border-radius:10px;font-size:13.5px;margin-bottom:16px;display:none}
+.banner.on{display:block}
+
+@media(max-width:780px){
+  .app{grid-template-columns:1fr}
+  aside{flex-direction:row;overflow-x:auto;padding:10px;gap:4px}
+  .brand,.logout{display:none}
+  .nav{white-space:nowrap;padding:9px 12px}
+  .nav .badge{margin-inline-start:6px}
+  main{padding:16px}
+  .grid2{grid-template-columns:1fr}
+}
+@media print{
+  aside,.topbar-actions,.filters,.no-print{display:none!important}
+  .app{display:block} main{padding:0}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="login">
+  <div class="login-card">
+    <div class="logo">
+      <b>وطن الأول للموارد البشرية</b>
+      <div class="t">منصة طلبات الصيانة</div>
+      <div class="s">إدارة الخدمات المساندة</div>
+    </div>
+    <div class="roletabs">
+      <button id="tabAdmin" class="on" onclick="pickRole('admin')">مسؤول النظام (أدمن)</button>
+      <button id="tabSite" onclick="pickRole('site')">مسؤول موقع</button>
+    </div>
+
+    <div id="adminForm">
+      <div class="lfield"><label>كلمة المرور</label><input id="adminPass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    </div>
+    <div id="siteForm" class="hidden">
+      <div class="lfield"><label>اسمك</label><input id="siteUserName" placeholder="مثال: أحمد الغامدي"></div>
+      <div class="lfield"><label>الموقع الذي تشرف عليه</label><select id="siteUserSite"></select></div>
+    </div>
+
+    <div id="loginErr" class="muted" style="color:var(--rej);margin:6px 0 12px;display:none"></div>
+    <button class="btn" style="width:100%" onclick="doLogin()">دخول</button>
+    <p class="muted" style="text-align:center;margin-top:14px">النظام متصل بقاعدة بيانات مشتركة — كل الأجهزة تشوف نفس البيانات.</p>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div class="app hidden" id="app">
+  <aside>
+    <div class="brand"><b>وطن الأول</b><span>منصة طلبات الصيانة</span></div>
+    <button class="nav active" data-view="dash" data-role="all"><span class="ic">▣</span> لوحة التحكم</button>
+    <button class="nav" data-view="new" data-role="all"><span class="ic">＋</span> طلب صيانة جديد</button>
+    <button class="nav" data-view="review" data-role="admin"><span class="ic">✔</span> مراجعة واعتماد <span class="badge" id="reviewBadge" style="display:none"></span></button>
+    <button class="nav" data-view="execute" data-role="admin"><span class="ic">🔧</span> توثيق التنفيذ</button>
+    <button class="nav" data-view="log" data-role="all"><span class="ic">▤</span> سجل الصيانة</button>
+    <button class="nav" data-view="reports" data-role="admin"><span class="ic">📊</span> التقارير</button>
+    <button class="nav" data-view="prev" data-role="admin"><span class="ic">⟳</span> الصيانة الوقائية</button>
+    <button class="nav" data-view="sites" data-role="admin"><span class="ic">🏢</span> إدارة المواقع</button>
+    <button class="logout" onclick="logout()">↩ تسجيل خروج</button>
+  </aside>
+
+  <main>
+    <div class="topbar no-print">
+      <div><h1 id="pageTitle">لوحة التحكم</h1><div class="who" id="whoami"></div></div>
+      <div class="topbar-actions">
+        <button class="btn ghost sm" onclick="refresh()">↻ تحديث</button>
+      </div>
+    </div>
+    <div class="banner" id="dbErr"></div>
+
+    <!-- Dashboard -->
+    <section class="view on" id="dash">
+      <div class="kpis" id="kpis"></div>
+      <div class="card"><h2>البلاغات العاجلة وغير المنجزة</h2><div class="tbl-wrap"><table id="dashUrgent"></table></div></div>
+      <div class="card" data-role="admin"><h2>ملخّص حسب الموقع</h2><div class="tbl-wrap"><table id="dashBySite"></table></div></div>
+    </section>
+
+    <!-- New request -->
+    <section class="view" id="new">
+      <div class="card" style="max-width:640px">
+        <h2>تسجيل بلاغ صيانة جديد</h2>
+        <div class="grid2">
+          <div class="field"><label>الموقع *</label><select id="nSite"></select></div>
+          <div class="field"><label>التصنيف *</label><select id="nCat"><option>تكييف</option><option>كهرباء</option><option>سباكة</option><option>أثاث ومعدات</option><option>إنشائي/دهان</option><option>أمن وسلامة</option><option>نظافة عامة</option><option>أخرى</option></select></div>
+        </div>
+        <div class="field"><label>وصف مختصر للعطل *</label><input id="nTitle" placeholder="مثال: تسريب في دورة مياه الطابق الأول"></div>
+        <div class="field"><label>التفاصيل</label><textarea id="nDesc" placeholder="أي تفاصيل إضافية تساعد الفني..."></textarea></div>
+        <div class="grid2">
+          <div class="field"><label>الأولوية *</label><select id="nPrio"><option>عاجل</option><option>عالي</option><option selected>متوسط</option><option>منخفض</option></select></div>
+          <div class="field"><label>مقدّم البلاغ</label><input id="nReporter" placeholder="اسم المشرف"></div>
+        </div>
+        <button class="btn" onclick="submitRequest()">إرسال البلاغ</button>
+        <p class="muted" style="margin-top:10px">يُرسل البلاغ بحالة «جديد» بانتظار اعتماد الإدارة.</p>
+      </div>
+    </section>
+
+    <!-- Review -->
+    <section class="view" id="review">
+      <div class="card"><h2>طلبات بانتظار الاعتماد <span class="sub">(حالة: جديد)</span></h2><div class="tbl-wrap"><table id="reviewTable"></table></div></div>
+    </section>
+
+    <!-- Execute -->
+    <section class="view" id="execute">
+      <div class="card"><h2>أعمال قيد التنفيذ — للتوثيق والإغلاق</h2><div class="tbl-wrap"><table id="execTable"></table></div></div>
+    </section>
+
+    <!-- Log -->
+    <section class="view" id="log">
+      <div class="filters no-print">
+        <input id="fSearch" placeholder="🔍 بحث..." oninput="renderLog()">
+        <select id="fStatus" onchange="renderLog()"><option value="">كل الحالات</option><option>جديد</option><option>قيد التنفيذ</option><option>بانتظار مورد/قطع</option><option>منجز</option><option>مرفوض</option></select>
+        <select id="fSite" onchange="renderLog()"></select>
+        <select id="fPrio" onchange="renderLog()"><option value="">كل الأولويات</option><option>عاجل</option><option>عالي</option><option>متوسط</option><option>منخفض</option></select>
+      </div>
+      <div class="card"><div class="tbl-wrap"><table id="logTable"></table></div></div>
+    </section>
+
+    <!-- Reports -->
+    <section class="view" id="reports">
+      <div class="topbar-actions no-print" style="margin-bottom:14px"><button class="btn ghost sm" onclick="window.print()">🖨 طباعة التقرير</button></div>
+      <div class="kpis" id="repKpis"></div>
+      <div class="card"><h2>حسب الموقع</h2><div class="tbl-wrap"><table id="repSite"></table></div></div>
+      <div class="card"><h2>حسب التصنيف</h2><div class="tbl-wrap"><table id="repCat"></table></div></div>
+    </section>
+
+    <!-- Preventive -->
+    <section class="view" id="prev">
+      <div class="topbar-actions no-print" style="margin-bottom:14px"><button class="btn sm" onclick="openPrev()">＋ مهمة وقائية</button></div>
+      <div class="card"><div class="tbl-wrap"><table id="prevTable"></table></div></div>
+    </section>
+
+    <!-- Sites -->
+    <section class="view" id="sites">
+      <div class="topbar-actions no-print" style="margin-bottom:14px"><button class="btn sm" onclick="openSite()">＋ موقع جديد</button></div>
+      <div class="card"><div class="tbl-wrap"><table id="siteTable"></table></div></div>
+    </section>
+  </main>
+</div>
+
+<!-- Modals -->
+<div class="overlay" id="execOverlay"><div class="modal">
+  <h3>توثيق تنفيذ الصيانة</h3>
+  <input type="hidden" id="execId">
+  <div class="field"><label>الفني / المورد المنفّذ</label><input id="execBy" placeholder="اسم الفني أو الشركة"></div>
+  <div class="field"><label>تكلفة الإصلاح (ريال)</label><input id="execCost" type="number" value="0"></div>
+  <div class="field"><label>ملاحظات التنفيذ</label><textarea id="execNotes" placeholder="ما الذي تم عمله؟ القطع المستبدلة..."></textarea></div>
+  <div class="modal-actions">
+    <button class="btn" onclick="saveExec('منجز')">إنهاء كمنجز ✔</button>
+    <button class="btn ghost" onclick="saveExec('بانتظار مورد/قطع')">بانتظار مورد/قطع</button>
+    <button class="btn ghost" onclick="closeM('execOverlay')">إلغاء</button>
+  </div>
+</div></div>
+
+<div class="overlay" id="siteOverlay"><div class="modal">
+  <h3>موقع جديد</h3>
+  <div class="field"><label>اسم الموقع *</label><input id="sName" placeholder="مثال: سكن العزيزية"></div>
+  <div class="grid2">
+    <div class="field"><label>المدينة *</label><select id="sCity"><option>الرياض</option><option>جدة</option><option>الدمام</option><option>أبها</option><option>مكة</option><option>المدينة</option><option>أخرى</option></select></div>
+    <div class="field"><label>النوع *</label><select id="sType"><option>سكن</option><option>فرع</option><option>مركز توزيع</option><option>مكتب</option></select></div>
+  </div>
+  <div class="field"><label>العنوان</label><input id="sAddr" placeholder="الحي / الشارع"></div>
+  <div class="modal-actions"><button class="btn" onclick="saveSite()">حفظ</button><button class="btn ghost" onclick="closeM('siteOverlay')">إلغاء</button></div>
+</div></div>
+
+<div class="overlay" id="prevOverlay"><div class="modal">
+  <h3>مهمة صيانة وقائية</h3>
+  <div class="field"><label>الموقع *</label><select id="pSite"></select></div>
+  <div class="field"><label>المهمة *</label><input id="pTask" placeholder="مثال: تنظيف فلاتر التكييف"></div>
+  <div class="grid2">
+    <div class="field"><label>التكرار *</label><select id="pFreq"><option>شهري</option><option>ربع سنوي</option><option>نصف سنوي</option><option>سنوي</option></select></div>
+    <div class="field"><label>الاستحقاق القادم *</label><input id="pNext" type="date"></div>
+  </div>
+  <div class="modal-actions"><button class="btn" onclick="savePrev()">حفظ</button><button class="btn ghost" onclick="closeM('prevOverlay')">إلغاء</button></div>
+</div></div>
+
+<script>
+/* ================= الإعدادات ================= */
+const SUPA_URL = 'https://eizunxgpjdeumsqtaruk.supabase.co';
+const SUPA_KEY = 'sb_publishable_nuJ2bFC8DgTUZnRXNg6mcA_rjOLqzYg';
+const ADMIN_PASS = 'watan2026';   // ← غيّر كلمة مرور الأدمن من هنا
+/* ============================================= */
+
+const H = { 'apikey':SUPA_KEY, 'Authorization':'Bearer '+SUPA_KEY, 'Content-Type':'application/json' };
+async function sbGet(t){ const r=await fetch(`${SUPA_URL}/rest/v1/${t}?select=*&order=id.desc`,{headers:H}); if(!r.ok) throw new Error(await r.text()); return r.json(); }
+async function sbIns(t,b){ const r=await fetch(`${SUPA_URL}/rest/v1/${t}`,{method:'POST',headers:{...H,'Prefer':'return=representation'},body:JSON.stringify(b)}); if(!r.ok) throw new Error(await r.text()); return r.json(); }
+async function sbUpd(t,id,b){ const r=await fetch(`${SUPA_URL}/rest/v1/${t}?id=eq.${id}`,{method:'PATCH',headers:{...H,'Prefer':'return=representation'},body:JSON.stringify(b)}); if(!r.ok) throw new Error(await r.text()); return r.json(); }
+async function sbDel(t,id){ const r=await fetch(`${SUPA_URL}/rest/v1/${t}?id=eq.${id}`,{method:'DELETE',headers:H}); if(!r.ok) throw new Error(await r.text()); return true; }
+
+let state = { sites:[], requests:[], preventive:[] };
+let user = null;             // {role, name, siteId}
+let selectedRole = 'admin';
+
+/* ---------- Login ---------- */
+function pickRole(r){
+  selectedRole=r;
+  document.getElementById('tabAdmin').classList.toggle('on',r==='admin');
+  document.getElementById('tabSite').classList.toggle('on',r==='site');
+  document.getElementById('adminForm').classList.toggle('hidden',r!=='admin');
+  document.getElementById('siteForm').classList.toggle('hidden',r!=='site');
+  if(r==='site') fillLoginSites();
+}
+async function fillLoginSites(){
+  try{ if(!state.sites.length) state.sites=await sbGet('sites'); }catch(e){}
+  document.getElementById('siteUserSite').innerHTML = state.sites.map(s=>`<option value="${s.id}">${s.name} — ${s.city}</option>`).join('') || '<option value="">لا توجد مواقع بعد</option>';
+}
+function showLoginErr(m){ const e=document.getElementById('loginErr'); e.textContent=m; e.style.display=m?'block':'none'; }
+async function doLogin(){
+  showLoginErr('');
+  if(selectedRole==='admin'){
+    if(document.getElementById('adminPass').value!==ADMIN_PASS){ showLoginErr('كلمة المرور غير صحيحة.'); return; }
+    user={role:'admin',name:'مسؤول النظام',siteId:null};
+  } else {
+    const nm=document.getElementById('siteUserName').value.trim();
+    const sid=document.getElementById('siteUserSite').value;
+    if(!nm){ showLoginErr('اكتب اسمك.'); return; }
+    if(!sid){ showLoginErr('اختر موقعاً.'); return; }
+    user={role:'site',name:nm,siteId:Number(sid)};
+  }
+  try{ sessionStorage.setItem('wf_user',JSON.stringify(user)); }catch(e){}
+  await enterApp();
+}
+function logout(){ try{sessionStorage.removeItem('wf_user');}catch(e){} user=null; location.reload(); }
+
+/* ---------- Enter app ---------- */
+async function enterApp(){
+  document.getElementById('login').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('whoami').textContent = user.role==='admin' ? 'مسؤول النظام' : `مسؤول موقع — ${user.name}`;
+  applyRoleVisibility();
+  await refresh();
+  goView('dash');
+}
+function applyRoleVisibility(){
+  document.querySelectorAll('[data-role]').forEach(el=>{
+    const need=el.dataset.role;
+    el.style.display = (need==='all'||need===user.role) ? '' : 'none';
+  });
+}
+
+/* ---------- Data ---------- */
+async function refresh(){
+  const err=document.getElementById('dbErr');
+  try{
+    const [si,rq,pv]=await Promise.all([sbGet('sites'),sbGet('requests'),sbGet('preventive')]);
+    state={sites:si,requests:rq,preventive:pv};
+    err.classList.remove('on');
+    fillSiteSelects(); renderAll();
+  }catch(e){
+    err.textContent='تعذّر الاتصال بقاعدة البيانات. تأكد أنك شغّلت ملف SQL في Supabase (خطوة إنشاء الجداول). التفاصيل: '+e.message;
+    err.classList.add('on');
+  }
+}
+const siteName = id => (state.sites.find(s=>s.id===id)||{}).name || '—';
+const stClass = {'جديد':'new','قيد التنفيذ':'prog','بانتظار مورد/قطع':'wait','منجز':'done','مرفوض':'rej'};
+const stPill = s => `<span class="pill ${stClass[s]||'wait'}"><span class="dot"></span>${s}</span>`;
+const prioRank = {'عاجل':0,'عالي':1,'متوسط':2,'منخفض':3};
+// requests visible to current user (site users see only their site)
+const myReqs = () => user.role==='admin' ? state.requests : state.requests.filter(r=>r.site_id===user.siteId);
+
+/* ---------- Navigation ---------- */
+const titles={dash:'لوحة التحكم',new:'طلب صيانة جديد',review:'مراجعة واعتماد الطلبات',execute:'توثيق التنفيذ',log:'سجل الصيانة الرئيسي',reports:'التقارير',prev:'الصيانة الوقائية',sites:'إدارة المواقع'};
+document.querySelectorAll('.nav[data-view]').forEach(b=>b.onclick=()=>goView(b.dataset.view));
+function goView(v){
+  document.querySelectorAll('.nav[data-view]').forEach(n=>n.classList.toggle('active',n.dataset.view===v));
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id===v));
+  document.getElementById('pageTitle').textContent=titles[v]||'';
+  renderAll();
+}
+
+/* ---------- Renders ---------- */
+function renderAll(){ if(!user)return; renderDash(); renderReview(); renderExec(); renderLog(); renderReports(); renderPrev(); renderSites(); updateBadge(); }
+function updateBadge(){ const n=state.requests.filter(r=>r.status==='جديد').length; const b=document.getElementById('reviewBadge'); if(n>0&&user.role==='admin'){b.style.display='';b.textContent=n;}else b.style.display='none'; }
+
+function renderDash(){
+  const rs=myReqs();
+  const isNew=rs.filter(r=>r.status==='جديد').length;
+  const prog=rs.filter(r=>r.status==='قيد التنفيذ').length;
+  const urg=rs.filter(r=>r.priority==='عاجل'&&r.status!=='منجز'&&r.status!=='مرفوض').length;
+  const now=new Date(); const doneM=rs.filter(r=>r.status==='منجز'&&r.closed_at&&new Date(r.closed_at).getMonth()===now.getMonth()).length;
+  document.getElementById('kpis').innerHTML=`
+    <div class="kpi"><div class="n">${rs.length}</div><div class="l">إجمالي البلاغات</div></div>
+    <div class="kpi blue"><div class="n">${isNew}</div><div class="l">بانتظار الاعتماد</div></div>
+    <div class="kpi amber"><div class="n">${prog}</div><div class="l">قيد التنفيذ</div></div>
+    <div class="kpi red"><div class="n">${urg}</div><div class="l">عاجل غير منجز</div></div>
+    <div class="kpi green"><div class="n">${doneM}</div><div class="l">منجز هذا الشهر</div></div>`;
+  const urgent=rs.filter(r=>r.status!=='منجز'&&r.status!=='مرفوض').sort((a,b)=>prioRank[a.priority]-prioRank[b.priority]);
+  const t=document.getElementById('dashUrgent');
+  t.innerHTML = !urgent.length ? `<tr><td class="empty">لا توجد بلاغات مفتوحة 🎉</td></tr>`
+    : `<thead><tr><th>البلاغ</th><th>الموقع</th><th>الأولوية</th><th>الحالة</th></tr></thead><tbody>`+
+      urgent.slice(0,15).map(r=>`<tr><td>${r.title}</td><td class="muted">${siteName(r.site_id)}</td><td class="prio prio-${r.priority}">${r.priority}</td><td>${stPill(r.status)}</td></tr>`).join('')+`</tbody>`;
+  const bs=document.getElementById('dashBySite');
+  bs.innerHTML=`<thead><tr><th>الموقع</th><th>المدينة</th><th>جديد</th><th>قيد التنفيذ</th><th>منجز</th></tr></thead><tbody>`+
+    state.sites.map(s=>{const x=state.requests.filter(r=>r.site_id===s.id);return `<tr><td>${s.name}</td><td class="muted">${s.city}</td><td>${x.filter(r=>r.status==='جديد').length}</td><td>${x.filter(r=>r.status==='قيد التنفيذ').length}</td><td>${x.filter(r=>r.status==='منجز').length}</td></tr>`}).join('')+`</tbody>`;
+}
+
+function renderReview(){
+  const list=state.requests.filter(r=>r.status==='جديد');
+  const t=document.getElementById('reviewTable');
+  t.innerHTML = !list.length ? `<tr><td class="empty">لا توجد طلبات بانتظار الاعتماد</td></tr>`
+    : `<thead><tr><th>البلاغ</th><th>الموقع</th><th>التصنيف</th><th>الأولوية</th><th>مقدّم البلاغ</th><th>الإجراء</th></tr></thead><tbody>`+
+      list.map(r=>`<tr><td><b>${r.title}</b>${r.description?`<br><span class="muted">${r.description}</span>`:''}</td><td class="muted">${siteName(r.site_id)}</td><td>${r.category}</td><td class="prio prio-${r.priority}">${r.priority}</td><td class="muted">${r.reporter||'—'}</td>
+        <td class="actions"><button class="btn sm" onclick="approve(${r.id})">اعتماد ✔</button><button class="btn rej sm" onclick="reject(${r.id})">رفض</button></td></tr>`).join('')+`</tbody>`;
+}
+async function approve(id){ await sbUpd('requests',id,{status:'قيد التنفيذ',approved_by:user.name}); await refresh(); }
+async function reject(id){ if(!confirm('رفض هذا الطلب؟'))return; await sbUpd('requests',id,{status:'مرفوض',approved_by:user.name}); await refresh(); }
+
+function renderExec(){
+  const list=state.requests.filter(r=>r.status==='قيد التنفيذ'||r.status==='بانتظار مورد/قطع');
+  const t=document.getElementById('execTable');
+  t.innerHTML = !list.length ? `<tr><td class="empty">لا توجد أعمال قيد التنفيذ</td></tr>`
+    : `<thead><tr><th>البلاغ</th><th>الموقع</th><th>التصنيف</th><th>الأولوية</th><th>الحالة</th><th>الإجراء</th></tr></thead><tbody>`+
+      list.map(r=>`<tr><td><b>${r.title}</b></td><td class="muted">${siteName(r.site_id)}</td><td>${r.category}</td><td class="prio prio-${r.priority}">${r.priority}</td><td>${stPill(r.status)}</td>
+        <td><button class="btn sm" onclick="openExec(${r.id})">توثيق / إغلاق</button></td></tr>`).join('')+`</tbody>`;
+}
+function openExec(id){ const r=state.requests.find(x=>x.id===id); document.getElementById('execId').value=id; document.getElementById('execBy').value=r.assigned_to||''; document.getElementById('execCost').value=r.cost||0; document.getElementById('execNotes').value=r.done_notes||''; document.getElementById('execOverlay').classList.add('on'); }
+async function saveExec(status){
+  const id=document.getElementById('execId').value;
+  const body={ status, assigned_to:document.getElementById('execBy').value.trim(), cost:Number(document.getElementById('execCost').value)||0, done_notes:document.getElementById('execNotes').value.trim() };
+  if(status==='منجز') body.closed_at=new Date().toISOString();
+  await sbUpd('requests',id,body); closeM('execOverlay'); await refresh();
+}
+
+function renderLog(){
+  const q=(document.getElementById('fSearch').value||'').trim();
+  const fs=document.getElementById('fStatus').value, fsi=document.getElementById('fSite').value, fp=document.getElementById('fPrio').value;
+  let list=myReqs();
+  if(q) list=list.filter(r=>((r.title||'')+(r.description||'')+(r.reporter||'')).includes(q));
+  if(fs) list=list.filter(r=>r.status===fs);
+  if(fsi) list=list.filter(r=>r.site_id==fsi);
+  if(fp) list=list.filter(r=>r.priority===fp);
+  const t=document.getElementById('logTable');
+  t.innerHTML = !list.length ? `<tr><td class="empty">لا توجد بلاغات مطابقة</td></tr>`
+    : `<thead><tr><th>#</th><th>البلاغ</th><th>الموقع</th><th>التصنيف</th><th>الأولوية</th><th>الحالة</th><th>التكلفة</th>${user.role==='admin'?'<th></th>':''}</tr></thead><tbody>`+
+      list.map(r=>`<tr><td>${r.id}</td><td><b>${r.title}</b>${r.reporter?`<br><span class="muted">بلّغ: ${r.reporter}</span>`:''}</td><td class="muted">${siteName(r.site_id)}</td><td>${r.category}</td><td class="prio prio-${r.priority}">${r.priority}</td><td>${stPill(r.status)}</td><td>${r.cost?Number(r.cost).toLocaleString()+' ﷼':'—'}</td>${user.role==='admin'?`<td><button class="link" onclick="delReq(${r.id})">حذف</button></td>`:''}</tr>`).join('')+`</tbody>`;
+}
+async function delReq(id){ if(!confirm('حذف هذا البلاغ نهائياً؟'))return; await sbDel('requests',id); await refresh(); }
+
+function renderReports(){
+  const rs=state.requests;
+  const cost=rs.reduce((a,r)=>a+(Number(r.cost)||0),0);
+  document.getElementById('repKpis').innerHTML=`
+    <div class="kpi"><div class="n">${rs.length}</div><div class="l">إجمالي الطلبات</div></div>
+    <div class="kpi green"><div class="n">${rs.filter(r=>r.status==='منجز').length}</div><div class="l">منجزة</div></div>
+    <div class="kpi amber"><div class="n">${rs.filter(r=>r.status==='قيد التنفيذ').length}</div><div class="l">قيد التنفيذ</div></div>
+    <div class="kpi red"><div class="n">${rs.filter(r=>r.status==='مرفوض').length}</div><div class="l">مرفوضة</div></div>
+    <div class="kpi"><div class="n">${cost.toLocaleString()}</div><div class="l">إجمالي التكلفة (﷼)</div></div>`;
+  document.getElementById('repSite').innerHTML=`<thead><tr><th>الموقع</th><th>إجمالي</th><th>جديد</th><th>قيد التنفيذ</th><th>منجز</th><th>التكلفة (﷼)</th></tr></thead><tbody>`+
+    state.sites.map(s=>{const x=rs.filter(r=>r.site_id===s.id);const c=x.reduce((a,r)=>a+(Number(r.cost)||0),0);return `<tr><td>${s.name}</td><td>${x.length}</td><td>${x.filter(r=>r.status==='جديد').length}</td><td>${x.filter(r=>r.status==='قيد التنفيذ').length}</td><td>${x.filter(r=>r.status==='منجز').length}</td><td>${c.toLocaleString()}</td></tr>`}).join('')+`</tbody>`;
+  const cats={}; rs.forEach(r=>cats[r.category]=(cats[r.category]||0)+1);
+  document.getElementById('repCat').innerHTML=`<thead><tr><th>التصنيف</th><th>عدد البلاغات</th></tr></thead><tbody>`+
+    Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('')+`</tbody>`;
+}
+
+function renderPrev(){
+  const t=document.getElementById('prevTable'); const today=new Date().toISOString().slice(0,10);
+  t.innerHTML = !state.preventive.length ? `<tr><td class="empty">لا توجد مهام وقائية بعد</td></tr>`
+    : `<thead><tr><th>المهمة</th><th>الموقع</th><th>التكرار</th><th>الاستحقاق</th><th>الإجراء</th></tr></thead><tbody>`+
+      [...state.preventive].sort((a,b)=>(a.next_due||'').localeCompare(b.next_due||'')).map(p=>{const due=p.next_due&&p.next_due<=today;return `<tr><td><b>${p.task}</b></td><td class="muted">${siteName(p.site_id)}</td><td>${p.frequency}</td><td style="${due?'color:var(--rej);font-weight:700':''}">${p.next_due||'—'}${due?' ⚠':''}</td><td class="actions"><button class="btn sm" onclick="donePrev(${p.id},'${p.frequency}')">تم التنفيذ</button><button class="link" onclick="delPrev(${p.id})">حذف</button></td></tr>`}).join('')+`</tbody>`;
+}
+async function donePrev(id,freq){ const add={'شهري':30,'ربع سنوي':90,'نصف سنوي':182,'سنوي':365}[freq]||30; const d=new Date(); d.setDate(d.getDate()+add); await sbUpd('preventive',id,{next_due:d.toISOString().slice(0,10)}); await refresh(); }
+async function delPrev(id){ if(!confirm('حذف المهمة؟'))return; await sbDel('preventive',id); await refresh(); }
+
+function renderSites(){
+  const t=document.getElementById('siteTable');
+  t.innerHTML = !state.sites.length ? `<tr><td class="empty">لا توجد مواقع — أضف موقعاً</td></tr>`
+    : `<thead><tr><th>الموقع</th><th>المدينة</th><th>النوع</th><th>العنوان</th><th>بلاغات مفتوحة</th><th></th></tr></thead><tbody>`+
+      state.sites.map(s=>{const op=state.requests.filter(r=>r.site_id===s.id&&r.status!=='منجز'&&r.status!=='مرفوض').length;return `<tr><td><b>${s.name}</b></td><td class="muted">${s.city}</td><td>${s.type}</td><td class="muted">${s.address||'—'}</td><td>${op}</td><td><button class="link" onclick="delSite(${s.id})">حذف</button></td></tr>`}).join('')+`</tbody>`;
+}
+async function delSite(id){ if(!confirm('حذف الموقع؟ سيُحذف معه كل بلاغاته.'))return; await sbDel('sites',id); await refresh(); }
+
+/* ---------- Selects & modals ---------- */
+function fillSiteSelects(){
+  const opts=state.sites.map(s=>`<option value="${s.id}">${s.name} — ${s.city}</option>`).join('');
+  document.getElementById('nSite').innerHTML=opts;
+  document.getElementById('pSite').innerHTML=opts;
+  document.getElementById('fSite').innerHTML=`<option value="">كل المواقع</option>`+opts;
+  // site user: lock new-request site to their own
+  if(user&&user.role==='site'){ document.getElementById('nSite').value=user.siteId; document.getElementById('nSite').disabled=true; document.getElementById('nReporter').value=user.name; }
+}
+async function submitRequest(){
+  const title=document.getElementById('nTitle').value.trim();
+  if(!title){ alert('اكتب وصفاً مختصراً للعطل.'); return; }
+  const body={ site_id:Number(document.getElementById('nSite').value), category:document.getElementById('nCat').value, title, description:document.getElementById('nDesc').value.trim(), priority:document.getElementById('nPrio').value, status:'جديد', reporter:document.getElementById('nReporter').value.trim() };
+  try{ await sbIns('requests',body); document.getElementById('nTitle').value='';document.getElementById('nDesc').value='';
+    alert('تم إرسال البلاغ ✔'); await refresh(); goView(user.role==='admin'?'review':'log');
+  }catch(e){ alert('تعذّر الإرسال: '+e.message); }
+}
+function openSite(){ document.getElementById('siteOverlay').classList.add('on'); }
+async function saveSite(){
+  const name=document.getElementById('sName').value.trim(); if(!name){alert('اكتب اسم الموقع.');return;}
+  await sbIns('sites',{name,city:document.getElementById('sCity').value,type:document.getElementById('sType').value,address:document.getElementById('sAddr').value.trim()});
+  document.getElementById('sName').value='';document.getElementById('sAddr').value=''; closeM('siteOverlay'); await refresh();
+}
+function openPrev(){ document.getElementById('pNext').value=new Date(Date.now()+30*864e5).toISOString().slice(0,10); document.getElementById('prevOverlay').classList.add('on'); }
+async function savePrev(){
+  const task=document.getElementById('pTask').value.trim(); if(!task){alert('اكتب اسم المهمة.');return;}
+  await sbIns('preventive',{site_id:Number(document.getElementById('pSite').value),task,frequency:document.getElementById('pFreq').value,next_due:document.getElementById('pNext').value});
+  document.getElementById('pTask').value=''; closeM('prevOverlay'); await refresh();
+}
+function closeM(id){ document.getElementById(id).classList.remove('on'); }
+document.querySelectorAll('.overlay').forEach(o=>o.onclick=e=>{if(e.target===o)o.classList.remove('on')});
+
+/* ---------- Boot ---------- */
+(async function(){
+  try{ const saved=sessionStorage.getItem('wf_user'); if(saved){ user=JSON.parse(saved); await enterApp(); return; } }catch(e){}
+  pickRole('admin');
+})();
+</script>
+</body>
+</html>
